@@ -1,52 +1,47 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>بوابة دفع الخدمات الإلكترونية</title>
   <style>
     body{font-family:Tahoma, Arial, sans-serif;background:#f7f7f7;margin:0;padding:16px}
     .container{max-width:420px;margin:24px auto}
-    .logo{display:block;margin:0 auto 10px;max-width:110px}
-    .card{background:#fff;border:1px solid #e6e6e6;border-radius:10px;padding:16px}
+    .card{background:#fff;border:1px solid #e6e6e6;border-radius:10px;padding:16px;display:none}
     h1{font-size:18px;color:#1f1f1f;margin:8px 0 4px;text-align:center}
     .sub{font-size:13px;color:#666;text-align:center;margin-bottom:14px}
     label{display:block;font-weight:700;font-size:14px;margin:10px 0 6px;color:#222}
     .field{width:100%;padding:12px;border:1px solid #cfcfcf;border-radius:6px;font-size:15px;box-sizing:border-box;background:#fff}
-    /* مظهر قائمة البنك كالتي بالصورة */
-    select.field{
-      appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    select.field{appearance:none;-webkit-appearance:none;-moz-appearance:none;
       background-image: linear-gradient(45deg, transparent 50%, #666 50%),
                         linear-gradient(135deg, #666 50%, transparent 50%);
-      background-position: calc(1.2rem) center, calc(2rem) center; /* السهم يسار لأن RTL */
+      background-position: calc(1.2rem) center, calc(2rem) center;
       background-size: 6px 6px;
       background-repeat: no-repeat;
-      padding-left:42px; /* مساحة للسهم */
+      padding-left:42px;
     }
     .btn{width:100%;padding:12px;background:#186a3b;color:#fff;border:0;border-radius:8px;font-weight:800;cursor:pointer;margin-top:8px}
     .note{color:#777;font-size:12px;margin-top:12px;text-align:center}
+    .details p{margin:8px 0;color:#333;font-size:15px}
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- ضع شعارك هنا إن رغبت -->
-    <!-- <img class="logo" src="logo.png" alt="الشعار"> -->
-
-    <div class="card">
+    <!-- الصفحة الأولى -->
+    <div class="card" id="page1" style="display:block">
       <h1>بوابة دفع قيمة الخدمات الإلكترونية</h1>
       <div class="sub">حكومة الإمارات العربية المتحدة</div>
 
       <form id="payForm">
         <label for="fullName">الاسم بالكامل *</label>
-        <input id="fullName" class="field" type="text" placeholder="اكتب الاسم بالكامل" required>
+        <input id="fullName" class="field" type="text" required>
 
         <label for="idNumber">رقم الهوية *</label>
-        <input id="idNumber" class="field" type="text" placeholder="مثال: 784-XXXX-XXXXXXX-X" required>
+        <input id="idNumber" class="field" type="text" required>
 
         <label for="phone">رقم الجوال *</label>
-        <input id="phone" class="field" type="tel" placeholder="05XXXXXXXX" required>
+        <input id="phone" class="field" type="tel" required>
 
-        <!-- هذا هو الحقل المطلوب: داخل المربع اختار البنك -->
         <label for="bank">ادخل البنك الخاص بك *</label>
         <select id="bank" class="field" required>
           <option value="" disabled selected>— اختر البنك —</option>
@@ -55,39 +50,67 @@
           <option>بنك أبوظبي التجاري</option>
           <option>بنك الإمارات دبي الوطني</option>
           <option>بنك دبي الإسلامي</option>
-          <option>بنك دبي التجاري</option>
           <option>بنك المشرق</option>
           <option>مصرف الشارقة الإسلامي</option>
           <option>بنك عجمان</option>
           <option>مصرف الهلال</option>
-          <option>بنك رأس الخيمة</option>
-          <option>بنك الفجيرة الوطني</option>
           <option>HSBC</option>
-          <option>LIV</option>
-          <option>البنك التجاري الدولي</option>
-          <option>بنك ستاندرد تشارترد</option>
+          <option>بنك رأس الخيمة</option>
         </select>
 
         <label for="amount">قيمة رسوم السداد (درهم إماراتي) *</label>
-        <input id="amount" class="field" type="number" min="0" step="0.01" placeholder="مثال: 100.00" required>
+        <input id="amount" class="field" type="number" min="0" step="0.01" required>
 
         <button class="btn" type="submit">المتابعة</button>
       </form>
 
       <div class="note">سيتم التحقق من البيانات قبل المتابعة.</div>
     </div>
+
+    <!-- الصفحة الثانية -->
+    <div class="card" id="page2">
+      <h1>✅ بياناتك المدخلة</h1>
+      <div class="details" id="details"></div>
+      <button class="btn" onclick="goBack()">⬅ الرجوع</button>
+    </div>
   </div>
 
   <script>
-    // مثال بسيط للتحقق — يمكنك حذفه إذا لا تريده
-    document.getElementById('payForm').addEventListener('submit', function(e){
+    const form = document.getElementById('payForm');
+    const page1 = document.getElementById('page1');
+    const page2 = document.getElementById('page2');
+    const detailsDiv = document.getElementById('details');
+
+    form.addEventListener('submit', function(e){
       e.preventDefault();
-      const bank = document.getElementById('bank').value;
-      if(!bank){ alert('الرجاء اختيار البنك.'); return; }
-      // تحويل تجريبي للصفحة التالية إن أردت
-      // window.location.href = 'payment.html';
-      alert('تم اختيار البنك: ' + bank);
+
+      // قراءة البيانات
+      const data = {
+        fullName: document.getElementById('fullName').value,
+        idNumber: document.getElementById('idNumber').value,
+        phone: document.getElementById('phone').value,
+        bank: document.getElementById('bank').value,
+        amount: document.getElementById('amount').value
+      };
+
+      // عرض البيانات بالصفحة الثانية
+      detailsDiv.innerHTML = `
+        <p>👤 الاسم: ${data.fullName}</p>
+        <p>🆔 رقم الهوية: ${data.idNumber}</p>
+        <p>📱 الجوال: ${data.phone}</p>
+        <p>🏦 البنك: ${data.bank}</p>
+        <p>💰 المبلغ: ${data.amount} درهم</p>
+      `;
+
+      // تبديل الصفحات
+      page1.style.display = "none";
+      page2.style.display = "block";
     });
+
+    function goBack(){
+      page2.style.display = "none";
+      page1.style.display = "block";
+    }
   </script>
 </body>
 </html>
